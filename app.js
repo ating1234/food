@@ -124,6 +124,8 @@ const btnExport      = $("btnExport");
 const btnImportTrigger=$("btnImportTrigger");
 const importFileInput= $("importFileInput");
 const btnShare       = $("btnShare");
+const btnHeaderShare = $("btnHeaderShare");
+const mobileCatBar   = $("mobileCatBar");
 
 // ===== 初始化 =====
 async function init() {
@@ -208,6 +210,8 @@ function syncFavModalBtn() {
 function updateFavCount() {
   const el = document.getElementById("favCount");
   if (el) el.textContent = favorites.size;
+  const mEl = document.getElementById("mFavCount");
+  if (mEl) mEl.textContent = favorites.size;
 }
 
 // ===== 收藏工具列控制 =====
@@ -296,14 +300,36 @@ function importFavorites(file) {
   reader.readAsText(file);
 }
 
-// ===== 產生分享連結 =====
-function generateShareURL() {
-  if (favorites.size === 0) { showToast("尚未收藏任何食品"); return; }
-  const codes = [...favorites].join(",");
-  const url   = `${location.origin}${location.pathname}#fav=${encodeURIComponent(codes)}`;
-  if (navigator.clipboard) {
+// ===== 智慧分享（支援手機原生 Web Share 與無收藏時分享首頁）=====
+async function shareContent(shareFavOnly = false) {
+  let url = `${location.origin}${location.pathname}`;
+  let title = "食品營養成分 - 台灣食品營養成分資料庫";
+  let text = "快速查詢 2,180 種台灣食品營養成分、自訂攝取量換算與食品比較！";
+
+  if (favorites.size > 0) {
+    const codes = [...favorites].join(",");
+    url = `${location.origin}${location.pathname}#fav=${encodeURIComponent(codes)}`;
+    title = "我的食品營養收藏清單 - 食品營養成分";
+    text = `這是我在「食品營養成分」收藏的 ${favorites.size} 種食品清單，點擊直接查看營養成分與比較！`;
+  } else if (shareFavOnly) {
+    showToast("目前尚未收藏食品，為您分享網站首頁");
+  }
+
+  // 1. 手機端 / 支援環境優先使用原生分享功能
+  if (navigator.share) {
+    try {
+      await navigator.share({ title, text, url });
+      return;
+    } catch (err) {
+      if (err.name === "AbortError") return; // 使用者主動取消分享
+      console.warn("Web Share 呼叫失敗，改用剪貼簿複製：", err);
+    }
+  }
+
+  // 2. Fallback：複製到剪貼簿
+  if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(url)
-      .then(() => showToast("🔗 分享連結已複製到剪貼簿"))
+      .then(() => showToast(favorites.size > 0 ? "🔗 收藏分享連結已複製到剪貼簿" : "🔗 網站連結已複製到剪貼簿"))
       .catch(() => prompt("複製此分享連結：", url));
   } else {
     prompt("複製此分享連結：", url);
@@ -317,61 +343,99 @@ importFileInput.addEventListener("change", e => {
   const file = e.target.files[0];
   if (file) { importFavorites(file); importFileInput.value = ""; }
 });
-btnShare.addEventListener("click", generateShareURL);
+btnShare.addEventListener("click", () => shareContent(true));
+if (btnHeaderShare) {
+  btnHeaderShare.addEventListener("click", () => shareContent(false));
+}
 
 
-// ===== 分類列表 =====
+// ===== 分類列表（同步建立桌面側欄與手機滑動標籤）=====
 function buildCategoryList() {
   const counts = {};
   allFoods.forEach(f => { counts[f.category] = (counts[f.category]||0) + 1; });
   const cats = Object.keys(counts).sort();
 
   categoryList.innerHTML = "";
+  if (mobileCatBar) mobileCatBar.innerHTML = "";
 
-  // ── 我的收藏（置頂，預設 active）──
-  const favLi = makeCatLi("❤️ 我的收藏", favorites.size, true, "favCount");
-  favLi.addEventListener("click", () => {
-    currentCategory = "__favorites__";
-    setActiveCat(favLi);
-    filterAndRender();
-  });
+  // ── 我的收藏（置頂）──
+  const favLi = makeCatLi("❤️ 我的收藏", favorites.size, true, "favCount", "__favorites__");
+  favLi.addEventListener("click", () => selectCategory("__favorites__"));
   categoryList.appendChild(favLi);
+
+  if (mobileCatBar) {
+    const favPill = makeCatPill("❤️ 我的收藏", favorites.size, true, "mFavCount", "__favorites__");
+    favPill.addEventListener("click", () => selectCategory("__favorites__"));
+    mobileCatBar.appendChild(favPill);
+  }
 
   // ── 分隔線 ──
   const sep1 = document.createElement("li");
   sep1.className = "cat-sep";
   categoryList.appendChild(sep1);
 
-  // ── 全部（在分類列表上方）──
-  const allLi = makeCatLi("🍽️ 全部", allFoods.length, false);
-  allLi.addEventListener("click", () => {
-    currentCategory = null;
-    setActiveCat(allLi);
-    filterAndRender();
-  });
+  // ── 全部 ──
+  const allLi = makeCatLi("🍽️ 全部", allFoods.length, false, "", "__all__");
+  allLi.addEventListener("click", () => selectCategory(null));
   categoryList.appendChild(allLi);
+
+  if (mobileCatBar) {
+    const allPill = makeCatPill("🍽️ 全部", allFoods.length, false, "", "__all__");
+    allPill.addEventListener("click", () => selectCategory(null));
+    mobileCatBar.appendChild(allPill);
+  }
 
   // ── 各食品分類 ──
   cats.forEach(cat => {
-    const li = makeCatLi(`${CAT_EMOJI[cat]||"🍴"} ${cat}`, counts[cat]);
-    li.addEventListener("click", () => {
-      currentCategory = cat;
-      setActiveCat(li);
-      filterAndRender();
-    });
+    const emoji = CAT_EMOJI[cat] || "🍴";
+    const li = makeCatLi(`${emoji} ${cat}`, counts[cat], false, "", cat);
+    li.addEventListener("click", () => selectCategory(cat));
     categoryList.appendChild(li);
+
+    if (mobileCatBar) {
+      const pill = makeCatPill(`${emoji} ${cat}`, counts[cat], false, "", cat);
+      pill.addEventListener("click", () => selectCategory(cat));
+      mobileCatBar.appendChild(pill);
+    }
   });
 }
 
-function makeCatLi(label, count, active=false, countId="") {
+function selectCategory(cat) {
+  currentCategory = cat;
+  setActiveCat(cat);
+  filterAndRender();
+}
+
+function makeCatLi(label, count, active=false, countId="", catKey="") {
   const li = document.createElement("li");
+  li.dataset.cat = catKey || (label.includes("全部") ? "__all__" : label);
   if (active) li.classList.add("active");
   li.innerHTML = `<span>${label}</span><span class="cat-count"${countId?` id="${countId}`:""}">${count}</span>`;
   return li;
 }
-function setActiveCat(li) {
-  document.querySelectorAll(".category-list li").forEach(l => l.classList.remove("active"));
-  li.classList.add("active");
+
+function makeCatPill(label, count, active=false, countId="", catKey="") {
+  const pill = document.createElement("button");
+  pill.className = "mcat-pill" + (active ? " active" : "");
+  pill.dataset.cat = catKey || (label.includes("全部") ? "__all__" : label);
+  pill.innerHTML = `<span>${label}</span><span class="mcat-count"${countId?` id="${countId}`:""}>${count}</span>`;
+  return pill;
+}
+
+function setActiveCat(cat) {
+  const key = cat === null ? "__all__" : cat;
+  document.querySelectorAll("#categoryList li").forEach(l => {
+    l.classList.toggle("active", l.dataset.cat === key);
+  });
+  if (mobileCatBar) {
+    document.querySelectorAll("#mobileCatBar .mcat-pill").forEach(p => {
+      const isAct = p.dataset.cat === key;
+      p.classList.toggle("active", isAct);
+      if (isAct) {
+        p.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      }
+    });
+  }
 }
 
 // ===== 搜尋相關性評分 =====

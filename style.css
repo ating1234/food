@@ -68,8 +68,23 @@ body {
 .logo-sub  { font-size: .62rem; color: rgba(255,255,255,.55); letter-spacing: .8px; text-transform: uppercase; }
 
 /* 右側區塊 */
-.header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-.header-meta  { font-size: .68rem; color: rgba(255,255,255,.5); }
+.header-right { display: flex; align-items: center; gap: 10px; }
+
+/* 頂部分享按鈕 */
+.header-share-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,.18);
+  border: 1px solid rgba(255,255,255,.35);
+  border-radius: 20px; padding: 5px 14px;
+  font-size: .8rem; font-weight: 600; color: #fff;
+  cursor: pointer; transition: all var(--transition);
+  backdrop-filter: blur(6px);
+  white-space: nowrap;
+}
+.header-share-btn:hover {
+  background: #fff; color: var(--green-dark);
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
 
 /* 特色標籤 */
 .header-tags { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
@@ -88,9 +103,36 @@ body {
   color: #fff; font-weight: 600;
 }
 
-@media (max-width: 900px) {
-  .header-tags { display: none; }
-  .header-meta { display: none; }
+/* ===== 手機 / 平板橫向滑動分類列 ===== */
+.mobile-cat-bar {
+  display: none;
+  gap: 8px;
+  padding: 4px 0 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  margin-bottom: 6px;
+}
+.mobile-cat-bar::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
+.mcat-pill {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 30px;
+  background: #fff; border: 1.5px solid var(--gray-200);
+  font-size: .82rem; color: var(--gray-700);
+  cursor: pointer; transition: all var(--transition);
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+.mcat-pill:hover { border-color: var(--green); color: var(--green-dark); background: var(--green-pale); }
+.mcat-pill.active {
+  background: var(--green); border-color: var(--green); color: #fff; font-weight: 600;
+}
+.mcat-count {
+  font-size: .68rem; padding: 1px 6px; border-radius: 12px;
+  background: var(--gray-100); color: var(--gray-500);
+}
+.mcat-pill.active .mcat-count {
+  background: rgba(255,255,255,.25); color: #fff;
 }
 
 /* ===== LAYOUT ===== */
@@ -568,12 +610,153 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
 
 /* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-  .sidebar { display: none; }
-  .main-content { padding: 12px 14px; }
-  .food-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-  .modal { max-width: 100%; border-radius: 14px 14px 0 0; }
-  .modal-overlay { align-items: flex-end; padding: 0; }
-  .cbar-label { display: none; }
-  .header-meta { display: none; }
+
+/* 1. iPad / 平板 (769px ~ 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  :root { --sidebar-w: 180px; }
+  .header-tags .htag:nth-child(n+3) { display: none; }
+  .food-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+  }
+  .main-content { padding: 14px 16px; }
+  .modal { max-width: 90vw; }
 }
+
+/* 2. 手機 (<= 768px) */
+@media (max-width: 768px) {
+  :root {
+    --header-h: 56px;
+    --cbar-h: 60px;
+  }
+  html { font-size: 14px; }
+  
+  /* Header 手機版排版 */
+  .site-header { height: var(--header-h); }
+  .header-inner { padding: 0 12px; gap: 8px; }
+  .logo-icon { font-size: 1.4rem; }
+  .logo-text { font-size: 1rem; }
+  .logo-sub  { display: none; }
+  .header-tags { display: none; }
+  .header-meta { display: none; }
+  .header-share-btn {
+    padding: 4px 10px;
+    font-size: .75rem;
+  }
+
+  /* 隱藏桌機側欄，開啟手機橫向滑動分類列 */
+  .sidebar { display: none; }
+  .mobile-cat-bar { display: flex; }
+  
+  .layout {
+    margin-top: var(--header-h);
+    padding-bottom: calc(var(--cbar-h) + 16px + env(safe-area-inset-bottom, 0px));
+  }
+  .main-content { padding: 10px 12px; }
+
+  /* 搜尋列 */
+  .search-section { margin-bottom: 10px; }
+  .search-wrap { padding: 6px 12px; }
+  .search-input { font-size: .9rem; }
+  .search-hint { font-size: .74rem; margin: 4px 2px 0; }
+
+  /* 收藏工具列手機版 */
+  .fav-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+  .ftb-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+  .ftbtn {
+    padding: 6px 4px;
+    font-size: .74rem;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* 食品卡片：手機雙欄流暢網格 */
+  .food-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .food-card {
+    padding: 10px 10px 8px;
+    gap: 2px;
+  }
+  .food-card::after {
+    right: 26px;
+    font-size: .56rem;
+    padding: 1px 5px;
+  }
+  .card-name { font-size: .88rem; margin-top: 14px; }
+  .card-en   { font-size: .65rem; }
+  .card-alias{ font-size: .65rem; }
+  .card-kcal { margin-top: 6px; padding-top: 6px; }
+  .card-kcal-val { font-size: .95rem; }
+  .card-compare-btn { font-size: .72rem; padding: 4px 6px; margin-top: 4px; }
+
+  /* 詳情彈窗：手機 Bottom Sheet 抽屜模式 */
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .modal {
+    max-width: 100%;
+    max-height: 88vh;
+    border-radius: 18px 18px 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 10px);
+  }
+  .modal-header {
+    padding: 14px 16px 10px;
+  }
+  .modal-food-name { font-size: 1.15rem; }
+  .modal-meta { padding: 6px 16px; font-size: .72rem; gap: 8px; }
+  .calc-bar { padding: 8px 16px; gap: 8px; }
+  .nutrient-tabs { padding: 8px 16px; gap: 4px; }
+  .ntab { padding: 3px 9px; font-size: .74rem; }
+  .nutrient-content { padding: 10px 14px; }
+  .nutrient-table { font-size: .8rem; }
+  .nutrient-table th, .nutrient-table td { padding: 6px 6px; }
+  .modal-footer {
+    padding: 10px 16px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
+  }
+  .btn-fav, .btn-compare-add { padding: 7px 14px; font-size: .82rem; }
+
+  /* 底部浮動比較列 */
+  .compare-bar {
+    height: auto;
+    min-height: var(--cbar-h);
+    padding: 8px 12px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .cbar-label { display: none; }
+  .cbar-foods { gap: 6px; }
+  .cbar-item { max-width: 110px; padding: 4px 6px; }
+  .cbar-name { font-size: .74rem; }
+  .cbar-btn { padding: 6px 10px; font-size: .76rem; }
+
+  /* 比較頁面在手機版 */
+  .compare-controls { gap: 8px; }
+  .compare-select { font-size: .78rem; padding: 4px 8px; }
+  .btn-clear-compare { font-size: .74rem; padding: 4px 8px; }
+  .compare-table { font-size: .78rem; }
+  .compare-table td, .compare-table th { padding: 6px 8px; }
+
+  /* Toast 提示 */
+  .toast {
+    bottom: 90px;
+    font-size: .8rem;
+    padding: 8px 16px;
+    max-width: 85vw;
+    text-align: center;
+  }
+}
+
