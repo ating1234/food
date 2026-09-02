@@ -1,0 +1,20 @@
+# 原始大型 JSON（不入 repo，保留在本機）
+20_5.json
+
+# 舊版大檔（已由 data/ 分類取代）
+foods_data.json
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Editor
+.vscode/
+.idea/
+*.swp
