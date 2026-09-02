@@ -798,5 +798,42 @@ select,
     max-width: 85vw;
     text-align: center;
   }
+
+  /* 手機版頁尾調整 */
+  .site-footer {
+    margin-top: 24px;
+    padding: 16px 8px 12px;
+  }
+  .footer-source {
+    font-size: .78rem;
+    gap: 6px;
+  }
+}
+
+/* ===== 全站頁尾 (Site Footer) ===== */
+.site-footer {
+  margin-top: 40px;
+  padding: 24px 12px;
+  border-top: 1px dashed var(--gray-200);
+  text-align: center;
+}
+.footer-source {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: .84rem;
+  color: var(--gray-500);
+  flex-wrap: wrap;
+  line-height: 1.5;
+}
+.source-badge {
+  background: var(--green-pale);
+  color: var(--green-dark);
+  font-weight: 700;
+  font-size: .72rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(26, 127, 90, .2);
 }
 

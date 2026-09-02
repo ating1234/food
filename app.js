@@ -300,25 +300,30 @@ function importFavorites(file) {
   reader.readAsText(file);
 }
 
-// ===== 智慧分享（支援手機原生 Web Share 與無收藏時分享首頁）=====
+// ===== 智慧分享（帶 Logo、網站名、摘要亮點與連結）=====
 async function shareContent(shareFavOnly = false) {
   let url = `${location.origin}${location.pathname}`;
-  let title = "食品營養成分 - 台灣食品營養成分資料庫";
-  let text = "快速查詢 2,180 種台灣食品營養成分、自訂攝取量換算與食品比較！";
+  let title = "🥗 食品營養成分 - 台灣食品營養成分資料庫";
+  let summary = "🥗【食品營養成分】台灣食品營養成分資料庫\n✨ 快速查詢 2,180 種台灣食品、104 項完整營養分析\n⚖️ 支援自訂攝取量換算與多食品比較！";
+  let clipboardText = "";
 
-  if (favorites.size > 0) {
+  if (favorites.size > 0 && shareFavOnly) {
     const codes = [...favorites].join(",");
     url = `${location.origin}${location.pathname}#fav=${encodeURIComponent(codes)}`;
-    title = "我的食品營養收藏清單 - 食品營養成分";
-    text = `這是我在「食品營養成分」收藏的 ${favorites.size} 種食品清單，點擊直接查看營養成分與比較！`;
-  } else if (shareFavOnly) {
-    showToast("目前尚未收藏食品，為您分享網站首頁");
+    title = "🥗 我的食品營養收藏清單 - 食品營養成分";
+    summary = `🥗【我的食品營養收藏清單】食品營養成分\n❤️ 與您分享我收藏的 ${favorites.size} 種食品清單，點擊即可直接查看營養成分與對比！`;
+    clipboardText = `${summary}\n👉 點擊查看清單：${url}`;
+  } else {
+    if (shareFavOnly) {
+      showToast("目前尚未收藏食品，為您分享網站首頁");
+    }
+    clipboardText = `${summary}\n👉 立即前往查詢：${url}`;
   }
 
-  // 1. 手機端 / 支援環境優先使用原生分享功能
+  // 1. 手機端 / 支援環境優先使用原生 Web Share
   if (navigator.share) {
     try {
-      await navigator.share({ title, text, url });
+      await navigator.share({ title, text: summary, url });
       return;
     } catch (err) {
       if (err.name === "AbortError") return; // 使用者主動取消分享
@@ -326,13 +331,13 @@ async function shareContent(shareFavOnly = false) {
     }
   }
 
-  // 2. Fallback：複製到剪貼簿
+  // 2. Fallback：複製包含 Logo、網站名與摘要的完整內容至剪貼簿
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url)
-      .then(() => showToast(favorites.size > 0 ? "🔗 收藏分享連結已複製到剪貼簿" : "🔗 網站連結已複製到剪貼簿"))
-      .catch(() => prompt("複製此分享連結：", url));
+    navigator.clipboard.writeText(clipboardText)
+      .then(() => showToast(favorites.size > 0 && shareFavOnly ? "📋 收藏分享卡片與連結已複製！" : "📋 網站分享內容與連結已複製！"))
+      .catch(() => prompt("複製此分享內容：", clipboardText));
   } else {
-    prompt("複製此分享連結：", url);
+    prompt("複製此分享內容：", clipboardText);
   }
 }
 
