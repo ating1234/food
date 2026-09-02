@@ -126,6 +126,53 @@ const importFileInput= $("importFileInput");
 const btnShare       = $("btnShare");
 const btnHeaderShare = $("btnHeaderShare");
 const mobileCatBar   = $("mobileCatBar");
+const exploreSection = $("exploreSection");
+const exploreGrid    = $("exploreGrid");
+const emptyStateMsg  = $("emptyStateMsg");
+const emptyStateSub  = $("emptyStateSub");
+
+// ===== 各分類圖示與生活代表熱門關鍵字 =====
+const CATEGORY_ICONS = {
+  "穀物類": "🌾",
+  "澱粉類": "🍠",
+  "堅果及種子類": "🥜",
+  "豆類": "🫘",
+  "蔬菜類": "🥦",
+  "菇類": "🍄",
+  "藻類": "🌊",
+  "水果類": "🍎",
+  "肉類": "🥩",
+  "蛋類": "🥚",
+  "魚貝類": "🐟",
+  "乳品類": "🥛",
+  "油脂類": "🫒",
+  "糖類": "🍯",
+  "飲料類": "☕",
+  "調味料及香辛料類": "🧂",
+  "糕餅點心類": "🍰",
+  "加工調理食品及其他類": "🍲"
+};
+
+const POPULAR_KEYWORDS = {
+  "肉類": ["牛肉", "羊肉", "雞胸肉", "去皮雞胸肉", "豬里肌", "牛里肌", "雞腿肉", "牛腱"],
+  "乳品類": ["低脂鮮乳", "全脂鮮乳", "全脂牛奶", "起司", "優酪乳", "鮮乳", "莫札瑞拉"],
+  "蛋類": ["雞蛋", "鴨蛋", "皮蛋", "鹹蛋", "水煮蛋"],
+  "魚貝類": ["鮭魚", "鯖魚", "鮪魚", "白蝦", "文蛤", "牡蠣", "虱目魚", "鱸魚"],
+  "蔬菜類": ["青花菜", "菠菜", "高麗菜", "地瓜葉", "胡蘿蔔", "番茄", "洋蔥", "蘆筍"],
+  "水果類": ["蘋果", "香蕉", "奇異果", "芭樂", "葡萄", "柳橙", "木瓜", "酪梨"],
+  "穀物類": ["燕麥", "糙米", "白米", "蕎麥", "小麥胚芽", "藜麥", "玉米"],
+  "澱粉類": ["地瓜", "馬鈴薯", "芋頭", "南瓜", "山藥", "蓮藕", "紅豆"],
+  "豆類": ["嫩豆腐", "板豆腐", "無糖豆漿", "豆漿", "毛豆", "黑豆", "黃豆"],
+  "菇類": ["生鮮香菇", "香菇", "杏鮑菇", "金針菇", "黑木耳", "鴻喜菇", "白木耳"],
+  "藻類": ["海苔", "紫菜", "海帶", "昆布", "裙帶菜", "寒天"],
+  "堅果及種子類": ["杏仁", "核桃", "腰果", "南瓜子", "黑芝麻", "夏威夷豆", "花生"],
+  "油脂類": ["橄欖油", "苦茶油", "酪梨油", "亞麻仁油", "芥花油", "沙拉油", "奶油"],
+  "飲料類": ["綠茶", "紅茶", "烏龍茶", "黑咖啡", "無糖綠茶", "豆奶", "檸檬汁"],
+  "糖類": ["蜂蜜", "黑糖", "果糖", "楓糖漿", "砂糖", "二砂"],
+  "調味料及香辛料類": ["大蒜", "薑", "辣椒", "醬油", "黑胡椒", "白胡椒", "味噌"],
+  "糕餅點心類": ["黑巧克力", "全麥麵包", "蘇打餅乾", "吐司", "布丁", "蛋糕"],
+  "加工調理食品及其他類": ["貢丸", "水餃", "泡菜", "肉鬆", "香腸", "火腿"]
+};
 
 // ===== 初始化 =====
 async function init() {
@@ -495,7 +542,11 @@ function filterAndRender() {
     }
     renderFoods(results);
     const catLabel = currentCategory === "__favorites__" ? "我的收藏" : currentCategory;
-    searchHint.textContent = `共 ${results.length.toLocaleString()} 種食品${catLabel ? `（${catLabel}）` : ""}`;
+    if (currentCategory === "__favorites__" && favorites.size === 0) {
+      searchHint.textContent = "💡 尚未收藏食品，為您精選各分類推薦（點擊直接查閱完整營養分析）";
+    } else {
+      searchHint.textContent = `共 ${results.length.toLocaleString()} 種食品${catLabel ? `（${catLabel}）` : ""}`;
+    }
     return;
   }
 
@@ -542,11 +593,116 @@ function filterAndRender() {
   renderFoods(results);
 }
 
+// ===== 隨機精選各分類生活推薦範例 =====
+function getExploreFoods() {
+  if (!allFoods || allFoods.length === 0) return [];
+  
+  const categories = Object.keys(CATEGORY_ICONS);
+  const selectedFoods = [];
+  const selectedCodes = new Set();
+
+  categories.forEach(cat => {
+    const catFoods = allFoods.filter(f => f.category === cat);
+    if (catFoods.length === 0) return;
+
+    // 優先挑選常用熱門關鍵字符合者
+    const kws = POPULAR_KEYWORDS[cat] || [];
+    const matched = catFoods.filter(f => kws.some(kw => f.name.includes(kw)));
+    
+    // 隨機選一個
+    let pick = null;
+    if (matched.length > 0) {
+      pick = matched[Math.floor(Math.random() * matched.length)];
+    } else {
+      pick = catFoods[Math.floor(Math.random() * catFoods.length)];
+    }
+
+    if (pick && !selectedCodes.has(pick.code)) {
+      selectedFoods.push(pick);
+      selectedCodes.add(pick.code);
+    }
+
+    // 對於特別常見熱門分類（肉類、乳品類、蔬菜類、水果類、魚貝類），多隨機挑一個不同的項目增加多元美感
+    if (["肉類", "蔬菜類", "水果類", "魚貝類", "乳品類"].includes(cat)) {
+      const remaining = catFoods.filter(f => !selectedCodes.has(f.code));
+      if (remaining.length > 0) {
+        const extraMatched = remaining.filter(f => kws.some(kw => f.name.includes(kw)));
+        const extraPick = extraMatched.length > 0 
+          ? extraMatched[Math.floor(Math.random() * extraMatched.length)]
+          : remaining[Math.floor(Math.random() * remaining.length)];
+        if (extraPick && !selectedCodes.has(extraPick.code)) {
+          selectedFoods.push(extraPick);
+          selectedCodes.add(extraPick.code);
+        }
+      }
+    }
+  });
+
+  return selectedFoods;
+}
+
+function renderExploreSection() {
+  if (!exploreGrid) return;
+  const exploreList = getExploreFoods();
+  exploreGrid.innerHTML = "";
+  
+  const frag = document.createDocumentFragment();
+  exploreList.forEach(food => {
+    const icon = CATEGORY_ICONS[food.category] || "🥗";
+    const catShort = food.category.replace("類","").replace("及其他","");
+
+    const card = document.createElement("div");
+    card.className = "explore-card";
+    card.dataset.code = food.code;
+    card.innerHTML = `
+      <div class="exp-card-left">
+        <span class="exp-icon">${icon}</span>
+        <div class="exp-info">
+          <span class="exp-name" title="${food.name}">${food.name}</span>
+          <span class="exp-cat">${catShort}</span>
+        </div>
+      </div>
+      <span class="exp-action" title="點擊查看成分">查成分 ➔</span>
+    `;
+
+    card.addEventListener("click", () => {
+      openDetail(food.code);
+    });
+
+    frag.appendChild(card);
+  });
+
+  exploreGrid.appendChild(frag);
+}
+
 // ===== 渲染食品卡片 =====
 function renderFoods(foods) {
+  const isFavView = currentCategory === "__favorites__";
+  const hasNoFavorites = favorites.size === 0;
+  const isNoSearch = !searchInput.value.trim();
+
+  // 若在我的收藏視圖且尚未有收藏、且未進行搜尋：顯示探索推薦區塊
+  if (isFavView && hasNoFavorites && isNoSearch) {
+    if (exploreSection) {
+      exploreSection.style.display = "block";
+      renderExploreSection();
+    }
+    foodGrid.style.display = "none";
+    emptyState.style.display = "none";
+    return;
+  }
+
+  if (exploreSection) exploreSection.style.display = "none";
+
   foodGrid.innerHTML = "";
-  if (foods.length === 0) { emptyState.style.display = "block"; return; }
+  if (foods.length === 0) {
+    foodGrid.style.display = "none";
+    emptyState.style.display = "block";
+    return;
+  }
+  
   emptyState.style.display = "none";
+  foodGrid.style.display = "grid";
 
   const slice = foods.slice(0, 200);
   const frag  = document.createDocumentFragment();
