@@ -521,6 +521,91 @@ select,
 .card-compare-btn:hover { border-color: var(--orange); color: var(--orange); background: var(--orange-light); }
 .card-compare-btn.active { border-color: var(--orange); background: var(--orange-light); color: #b45309; font-weight: 600; }
 
+/* ===== 分頁導航控制器 (PAGINATION) ===== */
+.pagination-bar {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: #ffffff;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.03);
+}
+.pg-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.pg-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--gray-200);
+  background: var(--gray-50);
+  color: var(--gray-700);
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.pg-btn:hover:not(:disabled) {
+  border-color: var(--green);
+  color: var(--green-dark);
+  background: var(--green-pale);
+}
+.pg-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--gray-100);
+}
+.pg-numbers {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.pg-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--gray-200);
+  background: #ffffff;
+  color: var(--gray-700);
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+.pg-num:hover:not(.active) {
+  border-color: var(--green);
+  color: var(--green-dark);
+  background: var(--green-pale);
+}
+.pg-num.active {
+  background: var(--green-dark);
+  color: #ffffff;
+  border-color: var(--green-dark);
+  box-shadow: 0 2px 6px rgba(26,127,90,.3);
+  font-weight: 800;
+}
+.pg-dots {
+  padding: 0 4px;
+  color: var(--gray-400);
+  font-size: .88rem;
+}
+.pg-info {
+  font-size: .78rem;
+  color: var(--gray-400);
+  font-weight: 500;
+}
+
 /* ===== EXPLORE SECTION（精美探索推薦區塊） ===== */
 .explore-section {
   background: linear-gradient(180deg, #ffffff 0%, #f9fbfb 100%);
@@ -1067,6 +1152,18 @@ select,
   .cmin-label { font-size: .65rem; }
   .cmin-val { font-size: .8rem; }
   .card-compare-btn { font-size: .78rem; padding: 5px 8px; margin-top: 5px; }
+
+  /* 手機版分頁控制器 */
+  .pagination-bar {
+    margin-top: 16px;
+    margin-bottom: 16px;
+    padding: 10px 8px;
+    gap: 8px;
+    border-radius: 12px;
+  }
+  .pg-btn { padding: 4px 10px; font-size: .76rem; }
+  .pg-num { width: 28px; height: 28px; font-size: .76rem; border-radius: 6px; }
+  .pg-info { font-size: .72rem; }
 
   /* 詳情彈窗：手機 Bottom Sheet 抽屜模式 */
   .modal-overlay {

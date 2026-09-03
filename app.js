@@ -137,6 +137,11 @@ const searchHistoryTags = $("searchHistoryTags");
 const clearAllHistory = $("clearAllHistory");
 const btnSortPotassium = $("btnSortPotassium");
 const btnSortPhosphorus= $("btnSortPhosphorus");
+const paginationBar   = $("paginationBar");
+const pgPrev          = $("pgPrev");
+const pgNext          = $("pgNext");
+const pgNumbers       = $("pgNumbers");
+const pgInfo          = $("pgInfo");
 
 // ===== 各分類圖示與生活代表熱門關鍵字 =====
 const CATEGORY_ICONS = {
@@ -889,8 +894,12 @@ function renderExploreSection() {
   exploreGrid.appendChild(frag);
 }
 
-// ===== 渲染食品卡片 =====
-function renderFoods(foods) {
+// ===== 分頁狀態與渲染食品卡片 =====
+const PAGE_SIZE = 100;
+let currentFoodsList = [];
+let currentPage = 1;
+
+function renderFoods(foods, page = 1) {
   const isFavView = currentCategory === "__favorites__";
   const hasNoFavorites = favorites.size === 0;
   const isNoSearch = !searchInput.value.trim();
@@ -903,22 +912,33 @@ function renderFoods(foods) {
     }
     foodGrid.style.display = "none";
     emptyState.style.display = "none";
+    if (paginationBar) paginationBar.style.display = "none";
     return;
   }
 
   if (exploreSection) exploreSection.style.display = "none";
 
   foodGrid.innerHTML = "";
-  if (foods.length === 0) {
+  if (!foods || foods.length === 0) {
     foodGrid.style.display = "none";
     emptyState.style.display = "block";
+    if (paginationBar) paginationBar.style.display = "none";
     return;
   }
   
   emptyState.style.display = "none";
   foodGrid.style.display = "grid";
 
-  const slice = foods.slice(0, 200);
+  // 儲存當前資料集與計算總頁數
+  currentFoodsList = foods;
+  const totalPages = Math.ceil(foods.length / PAGE_SIZE);
+  if (page < 1) page = 1;
+  if (page > totalPages) page = totalPages;
+  currentPage = page;
+
+  // 計算當前頁切片 (每頁 100 筆)
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const slice = foods.slice(startIndex, startIndex + PAGE_SIZE);
   const frag  = document.createDocumentFragment();
 
   slice.forEach(food => {
@@ -982,12 +1002,82 @@ function renderFoods(foods) {
 
   foodGrid.appendChild(frag);
 
-  if (foods.length > 200) {
-    const more = document.createElement("div");
-    more.style.cssText = "grid-column:1/-1;text-align:center;color:var(--gray-400);font-size:.82rem;padding:12px";
-    more.textContent = `顯示前 200 筆，共 ${foods.length} 筆。請縮小搜尋範圍查看更多。`;
-    foodGrid.appendChild(more);
+  // 渲染分頁控制器
+  renderPagination(foods.length, currentPage, totalPages);
+}
+
+// ===== 分頁控制器渲染 =====
+function renderPagination(totalCount, page, totalPages) {
+  if (!paginationBar) return;
+  if (totalPages <= 1) {
+    paginationBar.style.display = "none";
+    return;
   }
+
+  paginationBar.style.display = "flex";
+  if (pgInfo) {
+    pgInfo.textContent = `第 ${page} / ${totalPages} 頁（共 ${totalCount.toLocaleString()} 筆食品）`;
+  }
+
+  if (pgPrev) pgPrev.disabled = (page <= 1);
+  if (pgNext) pgNext.disabled = (page >= totalPages);
+
+  if (pgNumbers) {
+    pgNumbers.innerHTML = "";
+    const frag = document.createDocumentFragment();
+
+    // 智能頁碼生成（最多顯示部分鄰近頁碼與頭尾）
+    let pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (page <= 4) {
+        pages = [1, 2, 3, 4, 5, "...", totalPages];
+      } else if (page >= totalPages - 3) {
+        pages = [1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+      } else {
+        pages = [1, "...", page - 1, page, page + 1, "...", totalPages];
+      }
+    }
+
+    pages.forEach(p => {
+      if (p === "...") {
+        const span = document.createElement("span");
+        span.className = "pg-dots";
+        span.textContent = "…";
+        frag.appendChild(span);
+      } else {
+        const btn = document.createElement("button");
+        btn.className = "pg-num" + (p === page ? " active" : "");
+        btn.textContent = p;
+        btn.addEventListener("click", () => goToPage(p));
+        frag.appendChild(btn);
+      }
+    });
+
+    pgNumbers.appendChild(frag);
+  }
+}
+
+function goToPage(page) {
+  renderFoods(currentFoodsList, page);
+  // 平滑滾動至食品網格頂部
+  const target = $("tab-search") || foodGrid;
+  if (target) {
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+if (pgPrev) {
+  pgPrev.addEventListener("click", () => {
+    if (currentPage > 1) goToPage(currentPage - 1);
+  });
+}
+if (pgNext) {
+  pgNext.addEventListener("click", () => {
+    const totalPages = Math.ceil(currentFoodsList.length / PAGE_SIZE);
+    if (currentPage < totalPages) goToPage(currentPage + 1);
+  });
 }
 
 // ===== 詳情 Modal =====
