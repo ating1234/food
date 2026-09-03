@@ -11,7 +11,9 @@ const DAILY_VALUES = {
   "總碳水化合物": { dv: 300,  unit: "g" },
   "膳食纖維":     { dv: 25,   unit: "g" },
   "鈉":           { dv: 2400, unit: "mg" },
+  "鉀":           { dv: 2500, unit: "mg" },
   "鈣":           { dv: 1000, unit: "mg" },
+  "磷":           { dv: 800,  unit: "mg" },
   "鎂":           { dv: 350,  unit: "mg" },
   "鐵":           { dv: 15,   unit: "mg" },
   "鋅":           { dv: 15,   unit: "mg" },
@@ -900,21 +902,18 @@ function renderNutrientTable(food, cat) {
   let html = "";
   if (hasDV) {
     html += `<div class="dv-notice">
-      📊 進度條顯示佔每日建議攝取量 (DV) 百分比。
-      <span style="color:var(--orange);font-weight:600">橘字</span>表示偏高，
-      <span style="color:var(--red);font-weight:600">紅字</span>表示超標或過高。
-      （磷 &gt;100mg 橘、&gt;250mg 紅；鉀 &gt;100mg 橘、&gt;200mg 紅）
+      📊 進度條顯示佔每日建議量 (DV) 百分比。<span style="color:var(--orange);font-weight:600">橘字</span>偏高，<span style="color:var(--red);font-weight:600">紅字</span>超標。
     </div>`;
   }
 
   html += `<table class="nutrient-table">
     <thead>
       <tr>
-        <th style="width:38%">營養成分</th>
-        <th>單位</th>
-        ${customCol ? `<th>每 ${grams}g</th>` : ""}
-        <th>每 100g</th>
-        ${hasDV ? `<th style="min-width:140px">建議標準</th>` : ""}
+        <th class="th-name">營養成分</th>
+        <th class="th-unit">單位</th>
+        ${customCol ? `<th class="th-custom">每 ${grams}g</th>` : ""}
+        <th class="th-100g">每 100g</th>
+        ${hasDV ? `<th class="th-dv">建議標準</th>` : ""}
       </tr>
     </thead>
     <tbody>`;
@@ -943,11 +942,15 @@ function renderNutrientTable(food, cat) {
         // 自訂閾值
         if (customColor === "warn")   { isWarn = true; colorClass = "warn-dv"; }
         if (customColor === "danger") { isOver = true; colorClass = "over-dv"; }
-      } else if (dv && dispVal !== null) {
+      }
+      
+      if (dv && dispVal !== null) {
         // DV % 判斷
         pct = (dispVal / dv.dv) * 100;
-        if (pct > 100)      { isOver = true; colorClass = "over-dv"; }
-        else if (pct > 60)  { isWarn = true; colorClass = "warn-dv"; }
+        if (!customColor) {
+          if (pct > 100)      { isOver = true; colorClass = "over-dv"; }
+          else if (pct > 60)  { isWarn = true; colorClass = "warn-dv"; }
+        }
       }
 
       const fmtVal = v => {
@@ -957,21 +960,18 @@ function renderNutrientTable(food, cat) {
 
       const rowClass = isNull ? "null-val" : colorClass;
 
-      // ── DV / 自訂閾值欄 ──
+      // ── DV / 建議標準比例尺欄 ──
       let dvHtml = "";
       if (hasDV) {
-        if (customColor) {
-          // 自訂閾值：顯示區間標籤
-          const thresholds = CUSTOM_THRESHOLDS[item.name];
-          const labels = thresholds.map(t =>
-            `<span style="color:${t.color==='ok'?'var(--green)':t.color==='warn'?'var(--orange)':'var(--red)'}">`
-            + (t.max === Infinity ? `>${thresholds[thresholds.length-2].max}mg` : `≤${t.max}mg`)
-            + `</span>`
-          ).join(" | ");
-          dvHtml = `<td class="dv-cell"><div class="custom-threshold-labels">${labels}</div></td>`;
-        } else if (dv && dispVal !== null) {
+        if (dv && dispVal !== null) {
           const barPct   = Math.min(pct, 100);
-          const barClass = pct < 60 ? "low" : pct < 100 ? "medium" : "high";
+          let barClass = "";
+          if (customColor) {
+            barClass = customColor === "ok" ? "low" : customColor === "warn" ? "medium" : "high";
+          } else {
+            barClass = pct < 60 ? "low" : pct < 100 ? "medium" : "high";
+          }
+
           dvHtml = `<td class="dv-cell">
             <div class="dv-wrap">
               <div class="dv-bar-bg"><div class="dv-bar ${barClass}" style="width:${barPct}%"></div></div>
@@ -979,7 +979,7 @@ function renderNutrientTable(food, cat) {
             </div>
           </td>`;
         } else {
-          dvHtml = "<td style='color:var(--gray-300)'>—</td>";
+          dvHtml = "<td class='dv-cell' style='color:var(--gray-300);text-align:center;'>—</td>";
         }
       }
 
@@ -994,6 +994,32 @@ function renderNutrientTable(food, cat) {
   });
 
   html += "</tbody></table>";
+
+  // 鉀和磷的臨床顏色標準（縮小置於表格底部）
+  const hasKP = cat === "一般成分" || (food.nutrients[cat] && food.nutrients[cat].some(i => i.name === "鉀" || i.name === "磷"));
+  if (hasKP) {
+    html += `
+      <div class="nutrient-table-footer">
+        <div class="ntf-item">
+          <span class="ntf-badge">鉀 (K) 參考</span>
+          <span class="ntf-val ntf-ok">≤100mg 正常</span>
+          <span class="ntf-sep">·</span>
+          <span class="ntf-val ntf-warn">101~200mg 偏高</span>
+          <span class="ntf-sep">·</span>
+          <span class="ntf-val ntf-danger">&gt;200mg 過高</span>
+        </div>
+        <div class="ntf-item">
+          <span class="ntf-badge">磷 (P) 參考</span>
+          <span class="ntf-val ntf-ok">≤100mg 正常</span>
+          <span class="ntf-sep">·</span>
+          <span class="ntf-val ntf-warn">101~250mg 偏高</span>
+          <span class="ntf-sep">·</span>
+          <span class="ntf-val ntf-danger">&gt;250mg 過高</span>
+        </div>
+      </div>
+    `;
+  }
+
   nutrientContent.innerHTML = html;
 }
 

@@ -539,17 +539,50 @@ select,
 .null-val { color: var(--gray-300) !important; font-weight: 400 !important; }
 
 /* DV progress */
-.dv-cell { min-width: 130px; }
-.dv-wrap { display: flex; align-items: center; gap: 8px; }
+.dv-cell { min-width: 120px; }
+.dv-wrap { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
 .dv-bar-bg {
   flex: 1; height: 6px; background: var(--gray-200);
-  border-radius: 3px; overflow: hidden; min-width: 60px;
+  border-radius: 3px; overflow: hidden; min-width: 55px; max-width: 80px;
 }
 .dv-bar { height: 100%; border-radius: 3px; transition: width .3s; }
 .dv-bar.low    { background: var(--green); }
 .dv-bar.medium { background: var(--orange); }
 .dv-bar.high   { background: var(--red); }
-.dv-pct { font-size: .72rem; color: var(--gray-500); white-space: nowrap; min-width: 36px; text-align: right; }
+.dv-pct { font-size: .72rem; color: var(--gray-500); white-space: nowrap; min-width: 32px; text-align: right; }
+
+/* 營養表格底部參考標準小卡（縮小置底） */
+.nutrient-table-footer {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: .76rem;
+}
+.ntf-item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: var(--gray-600);
+}
+.ntf-badge {
+  font-weight: 700;
+  color: var(--green-dark);
+  background: var(--green-light);
+  padding: 1px 7px;
+  border-radius: 6px;
+  font-size: .72rem;
+}
+.ntf-val { font-weight: 600; }
+.ntf-ok { color: var(--green-dark); }
+.ntf-warn { color: var(--orange); }
+.ntf-danger { color: var(--red); }
+.ntf-sep { color: var(--gray-300); }
 
 /* ===== MODAL FOOTER ===== */
 .modal-footer {
@@ -863,9 +896,46 @@ select,
   .calc-input { font-size: 16px !important; }
   .nutrient-tabs { padding: 10px 18px; gap: 6px; }
   .ntab { padding: 5px 12px; font-size: .8rem; }
-  .nutrient-content { padding: 12px 16px; }
-  .nutrient-table { font-size: .88rem; }
-  .nutrient-table th, .nutrient-table td { padding: 8px 8px; }
+  .nutrient-content { padding: 10px 12px; }
+  .nutrient-table { font-size: .82rem; }
+  .nutrient-table th, .nutrient-table td { padding: 6px 4px; }
+  .nutrient-table th.th-name { max-width: 95px; }
+  .nutrient-table th.th-unit { text-align: center; }
+  .nutrient-table td:nth-child(2) { text-align: center; font-size: .75rem; }
+  
+  /* 建議標準比例尺在手機端縮小一半（約 60px） */
+  .dv-cell {
+    min-width: 60px !important;
+    width: 60px;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+  .dv-wrap {
+    gap: 3px;
+    justify-content: flex-end;
+  }
+  .dv-bar-bg {
+    min-width: 26px !important;
+    width: 26px;
+    height: 4px;
+    border-radius: 2px;
+  }
+  .dv-bar { border-radius: 2px; }
+  .dv-pct {
+    min-width: 24px;
+    font-size: .65rem;
+  }
+
+  .nutrient-table-footer {
+    margin-top: 10px;
+    padding: 8px 10px;
+    font-size: .72rem;
+    gap: 5px;
+  }
+  .ntf-badge {
+    font-size: .68rem;
+    padding: 1px 5px;
+  }
   .modal-footer {
     padding: 12px 18px;
     padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
