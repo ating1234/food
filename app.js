@@ -699,7 +699,7 @@ function filterAndRender() {
     renderFoods(results);
     const catLabel = currentCategory === "__favorites__" ? "我的收藏" : currentCategory;
     if (currentCategory === "__favorites__" && favorites.size === 0) {
-      searchHint.textContent = "💡 尚未收藏食品，為您精選各分類推薦（點擊直接查閱完整營養分析）";
+      searchHint.textContent = "";
     } else {
       searchHint.textContent = `共 ${results.length.toLocaleString()} 種食品${catLabel ? `（${catLabel}）` : ""}`;
     }
