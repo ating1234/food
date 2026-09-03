@@ -126,12 +126,15 @@ const btnExport      = $("btnExport");
 const btnImportTrigger=$("btnImportTrigger");
 const importFileInput= $("importFileInput");
 const btnShare       = $("btnShare");
-const btnHeaderShare = $("btnHeaderShare");
+const btnAddHome     = $("btnAddHome");
 const mobileCatBar   = $("mobileCatBar");
 const exploreSection = $("exploreSection");
 const exploreGrid    = $("exploreGrid");
 const emptyStateMsg  = $("emptyStateMsg");
 const emptyStateSub  = $("emptyStateSub");
+const installGuideOverlay = $("installGuideOverlay");
+const installGuideClose   = $("installGuideClose");
+const btnInstallGuideDone = $("btnInstallGuideDone");
 
 // ===== 各分類圖示與生活代表熱門關鍵字 =====
 const CATEGORY_ICONS = {
@@ -390,6 +393,36 @@ async function shareContent(shareFavOnly = false) {
   }
 }
 
+// ===== 加入主畫面（PWA 原生提示 + iOS / iPad 指引浮窗）=====
+let deferredInstallPrompt = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+});
+
+function openInstallGuide() {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === "accepted") {
+        showToast("🎉 已成功加入主畫面！");
+      }
+      deferredInstallPrompt = null;
+    });
+    return;
+  }
+  // 若無原生 prompt（如 iOS / iPadOS Safari 或已安裝環境），顯示指引浮窗
+  if (installGuideOverlay) {
+    installGuideOverlay.style.display = "flex";
+  }
+}
+
+function closeInstallGuide() {
+  if (installGuideOverlay) {
+    installGuideOverlay.style.display = "none";
+  }
+}
+
 // ===== 工具列按鈕事件 =====
 btnExport.addEventListener("click", exportFavorites);
 btnImportTrigger.addEventListener("click", () => importFileInput.click());
@@ -398,8 +431,20 @@ importFileInput.addEventListener("change", e => {
   if (file) { importFavorites(file); importFileInput.value = ""; }
 });
 btnShare.addEventListener("click", () => shareContent(true));
-if (btnHeaderShare) {
-  btnHeaderShare.addEventListener("click", () => shareContent(false));
+
+if (btnAddHome) {
+  btnAddHome.addEventListener("click", openInstallGuide);
+}
+if (installGuideClose) {
+  installGuideClose.addEventListener("click", closeInstallGuide);
+}
+if (btnInstallGuideDone) {
+  btnInstallGuideDone.addEventListener("click", closeInstallGuide);
+}
+if (installGuideOverlay) {
+  installGuideOverlay.addEventListener("click", (e) => {
+    if (e.target === installGuideOverlay) closeInstallGuide();
+  });
 }
 
 

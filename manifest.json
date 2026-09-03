@@ -1,0 +1,24 @@
+{
+  "name": "食品營養成分 - 台灣食品營養成分資料庫",
+  "short_name": "食品營養",
+  "description": "快速查詢 2,180 種台灣食品營養成分、自訂攝取量換算與食品比較",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a7f5a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
