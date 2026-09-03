@@ -192,6 +192,15 @@ async function init() {
     loadFromURLHash();
     // 渲染搜尋歷史紀錄
     renderSearchHistory();
+    // 動態載入版本號更新頁面標示
+    fetch("version.json").then(r => r.json()).then(v => {
+      if (v && v.version) {
+        const hMeta = $("headerMeta");
+        const fMeta = $("footerSourceText");
+        if (hMeta) hMeta.textContent = `資料來源：衛福部食藥署 第 ${v.version} 版`;
+        if (fMeta) fMeta.textContent = `資料來源：衛生福利部食品藥物管理署（TFDA）食品營養成分資料庫 第 ${v.version} 版`;
+      }
+    }).catch(()=>{});
     // 預設顯示「我的收藏」
     currentCategory = "__favorites__";
     filterAndRender();

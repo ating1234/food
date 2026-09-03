@@ -1,0 +1,44 @@
+name: 每月自動檢查並更新食品營養資料庫
+
+on:
+  # 每月 1 號 UTC 02:00 (台灣時間 10:00) 自動排程執行
+  schedule:
+    - cron: '0 2 1 * *'
+  # 支援在 GitHub 網頁上手動點擊 "Run workflow" 隨時執行檢查
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 檢出程式碼 (Checkout repository)
+        uses: actions/checkout@v4
+
+      - name: 🐍 設定 Python 環境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 🔄 執行資料庫更新與版本同步程式
+        id: updater
+        run: |
+          python3 update_dataset.py
+
+      - name: 🚀 提交並推送更新 (Commit & Push if updated)
+        run: |
+          # 檢查是否有檔案變動
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "檢測到資料更新，準備自動 Commit..."
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            git commit -m "chore(data): 自動更新衛福部食藥署食品營養資料庫與全站版本號"
+            git push origin main
+            echo "✅ 成功將最新資料庫與版本發布至 main 分支！"
+          else
+            echo "✨ 本次檢查無新資料變動，無需提交。"
+          fi

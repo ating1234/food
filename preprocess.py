@@ -14,7 +14,7 @@ preprocess.py v2
   → Cloudflare Pages 自動部署
 """
 
-import json, os, datetime
+import json, os, datetime, sys
 from collections import defaultdict
 
 INPUT_FILE   = "20_5.json"
@@ -22,8 +22,18 @@ INDEX_FILE   = "foods_index.json"
 VERSION_FILE = "version.json"
 DATA_DIR     = "data"
 
-# ── 版本號：每次更換 JSON 時請同步更新 ──
+# ── 版本號（可透過 CLI 傳入或預設） ──
 VERSION = "20.5"
+
+if len(sys.argv) > 1:
+    INPUT_FILE = sys.argv[1]
+if len(sys.argv) > 2:
+    VERSION = sys.argv[2]
+elif "20_5" not in INPUT_FILE:
+    # 嘗試從檔名解析版本號，例如 20_6.json -> 20.6
+    base = os.path.splitext(os.path.basename(INPUT_FILE))[0]
+    if "_" in base:
+        VERSION = base.replace("_", ".")
 
 def clean_value(v):
     """清理欄位值：去除空白，轉換數字，null 回傳 None"""
