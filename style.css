@@ -203,7 +203,10 @@ select,
 .main-content { flex: 1; padding: 18px 22px; min-width: 0; }
 
 /* ===== SEARCH ===== */
-.search-section { margin-bottom: 14px; }
+.search-section {
+  position: relative;
+  margin-bottom: 14px;
+}
 .search-wrap {
   display: flex; align-items: center;
   background: #fff; border: 2px solid var(--gray-200);
@@ -228,14 +231,25 @@ select,
 .clear-btn:hover { background: var(--gray-100); color: var(--gray-700); }
 .search-hint { font-size: .78rem; color: var(--gray-400); margin: 7px 4px 0; min-height: 18px; }
 
-/* ===== 最近搜尋紀錄 ===== */
+/* ===== 最近搜尋紀錄（浮動下拉選單） ===== */
 .search-history {
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: #ffffff;
-  border: 1px solid var(--gray-200);
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,.02);
+  position: absolute;
+  top: 48px;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+  animation: popDown 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes popDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .sh-header {
   display: flex;
@@ -931,7 +945,12 @@ select,
     font-size: 16px !important;
     min-height: 24px;
   }
-  .search-history { padding: 6px 10px; margin-top: 6px; }
+  .search-history {
+    top: 42px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.15);
+  }
   .sh-tag { padding: 2px 8px; font-size: .76rem; }
   .search-hint { font-size: .8rem; margin: 5px 4px 0; }
 

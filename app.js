@@ -521,7 +521,7 @@ function scoreFood(food, q, chars) {
   return 0;
 }
 
-// ===== 搜尋歷史管理（保持 5 個以內）=====
+// ===== 搜尋歷史管理（浮動下拉、保持 5 個以內）=====
 const MAX_SEARCH_HISTORY = 5;
 
 function getSearchHistory() {
@@ -556,11 +556,32 @@ function removeSearchHistoryItem(query, e) {
   let history = getSearchHistory().filter(item => item !== query);
   saveSearchHistoryList(history);
   renderSearchHistory();
+  if (history.length === 0) {
+    hideSearchHistoryDropdown();
+  }
 }
 
 function clearAllSearchHistory() {
   localStorage.removeItem("food_search_history");
   renderSearchHistory();
+  hideSearchHistoryDropdown();
+}
+
+function showSearchHistoryDropdown() {
+  if (!searchHistory) return;
+  const history = getSearchHistory();
+  if (history.length > 0) {
+    renderSearchHistory();
+    searchHistory.style.display = "block";
+  } else {
+    searchHistory.style.display = "none";
+  }
+}
+
+function hideSearchHistoryDropdown() {
+  if (searchHistory) {
+    searchHistory.style.display = "none";
+  }
 }
 
 function renderSearchHistory() {
@@ -571,7 +592,6 @@ function renderSearchHistory() {
     return;
   }
 
-  searchHistory.style.display = "block";
   searchHistoryTags.innerHTML = "";
 
   const frag = document.createDocumentFragment();
@@ -587,6 +607,7 @@ function renderSearchHistory() {
       searchInput.value = item;
       addSearchHistory(item); // 再次搜尋時自動置頂
       filterAndRender();
+      hideSearchHistoryDropdown();
       searchInput.focus();
     });
 
@@ -604,8 +625,27 @@ if (clearAllHistory) {
   clearAllHistory.addEventListener("click", clearAllSearchHistory);
 }
 
+// 點擊歷史容器內阻止預設行爲（防止失焦提早關閉下拉選單）
+if (searchHistory) {
+  searchHistory.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+  });
+}
+
+// 點擊外部區域時自動收起下拉浮動選單
+document.addEventListener("click", (e) => {
+  if (searchInput && searchHistory) {
+    if (!searchInput.contains(e.target) && !searchHistory.contains(e.target)) {
+      hideSearchHistoryDropdown();
+    }
+  }
+});
+
 let searchTimer = null;
 let saveHistoryTimer = null;
+
+searchInput.addEventListener("focus", showSearchHistoryDropdown);
+searchInput.addEventListener("click", showSearchHistoryDropdown);
 
 searchInput.addEventListener("input", () => {
   clearTimeout(searchTimer);
@@ -627,6 +667,7 @@ searchInput.addEventListener("keydown", (e) => {
     if (raw) {
       addSearchHistory(raw);
       filterAndRender();
+      hideSearchHistoryDropdown();
       searchInput.blur();
     }
   }
@@ -636,6 +677,7 @@ clearBtn.addEventListener("click", () => {
   searchInput.value = "";
   clearTimeout(saveHistoryTimer);
   filterAndRender();
+  showSearchHistoryDropdown();
   searchInput.focus();
 });
 
