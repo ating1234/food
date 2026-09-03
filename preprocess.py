@@ -45,6 +45,15 @@ def get_kcal(items):
                 kcal = round(v)
     return kcal
 
+def get_mineral(items, name):
+    """從分析項列表中取得指定礦物質每100克含量"""
+    for item in items:
+        if item["分析項分類"] == "礦物質" and item["分析項"] == name:
+            v = clean_value(item["每100克含量"])
+            if v is not None and isinstance(v, (int, float)):
+                return round(v, 1) if v % 1 != 0 else int(v)
+    return None
+
 def main():
     os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -66,9 +75,11 @@ def main():
     for code, items in grouped.items():
         first  = items[0]
         kcal   = get_kcal(items)
+        k_val  = get_mineral(items, "鉀")
+        p_val  = get_mineral(items, "磷")
         cat    = first["食品分類"]
 
-        # 索引資料（輕量，含 kcal 供卡片顯示）
+        # 索引資料（輕量，含 kcal, k, p 供卡片顯示）
         index.append({
             "code":     code,
             "name":     first["樣品名稱"],
@@ -78,6 +89,8 @@ def main():
             "desc":     first["內容物描述"] or "",
             "waste":    clean_value(first["廢棄率"]),
             "kcal":     kcal,
+            "k":        k_val,
+            "p":        p_val,
         })
 
         # 完整營養資料（按分析項分類整理）

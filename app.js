@@ -718,14 +718,29 @@ function renderFoods(foods) {
     card.dataset.code = food.code;
     card.dataset.catShort = food.category.replace("類","").replace("及其他","");
 
+    const kVal = (food.k !== null && food.k !== undefined) ? food.k : "—";
+    const pVal = (food.p !== null && food.p !== undefined) ? food.p : "—";
+    const kColor = getCustomColor("鉀", food.k);
+    const pColor = getCustomColor("磷", food.p);
+    const kClass = kColor === "danger" ? "min-danger" : kColor === "warn" ? "min-warn" : kColor === "ok" ? "min-ok" : "";
+    const pClass = pColor === "danger" ? "min-danger" : pColor === "warn" ? "min-warn" : pColor === "ok" ? "min-ok" : "";
+
     card.innerHTML = `
       <button class="card-fav-btn${isFav?" fav-on":""}" data-code="${food.code}" title="收藏">${isFav?"❤️":"🤍"}</button>
       <div class="card-name">${food.name}</div>
       <div class="card-en">${food.en_name || "&nbsp;"}</div>
       <div class="card-alias">${food.alias ? "別名："+food.alias : "&nbsp;"}</div>
-      <div class="card-kcal">
-        <span class="card-kcal-val" id="kcal-${food.code}">—</span>
-        <span class="card-kcal-unit">kcal/100g</span>
+      <div class="card-minerals">
+        <div class="card-mineral-item card-min-k ${kClass}">
+          <span class="cmin-label">鉀</span>
+          <span class="cmin-val">${kVal}</span>
+          <span class="cmin-unit">mg</span>
+        </div>
+        <div class="card-mineral-item card-min-p ${pClass}">
+          <span class="cmin-label">磷</span>
+          <span class="cmin-val">${pVal}</span>
+          <span class="cmin-unit">mg</span>
+        </div>
       </div>
       <button class="card-compare-btn${inCompare?" active":""}" data-code="${food.code}" title="${inCompare?"移出比較":"加入比較"}">
         ${inCompare ? "📊 比較中" : "＋ 比較"}
@@ -755,26 +770,12 @@ function renderFoods(foods) {
 
   foodGrid.appendChild(frag);
 
-  // kcal 已在索引中，直接填入，無需等待非同步載入
-  fillKcalInCards(slice);
-
   if (foods.length > 200) {
     const more = document.createElement("div");
     more.style.cssText = "grid-column:1/-1;text-align:center;color:var(--gray-400);font-size:.82rem;padding:12px";
     more.textContent = `顯示前 200 筆，共 ${foods.length} 筆。請縮小搜尋範圍查看更多。`;
     foodGrid.appendChild(more);
   }
-}
-
-/** kcal 已內含於 allFoods 索引，直接讀取即可 */
-function fillKcalInCards(foods) {
-  foods.forEach(food => {
-    const el = document.getElementById(`kcal-${food.code}`);
-    if (!el) return;
-    if (food.kcal !== null && food.kcal !== undefined) {
-      el.textContent = food.kcal;
-    }
-  });
 }
 
 // ===== 詳情 Modal =====
