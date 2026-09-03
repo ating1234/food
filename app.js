@@ -132,6 +132,9 @@ const exploreSection = $("exploreSection");
 const exploreGrid    = $("exploreGrid");
 const emptyStateMsg  = $("emptyStateMsg");
 const emptyStateSub  = $("emptyStateSub");
+const searchHistory  = $("searchHistory");
+const searchHistoryTags = $("searchHistoryTags");
+const clearAllHistory = $("clearAllHistory");
 
 // ===== 各分類圖示與生活代表熱門關鍵字 =====
 const CATEGORY_ICONS = {
@@ -187,6 +190,8 @@ async function init() {
     buildCategoryList();
     // 解析 URL hash（分享連結帶入的收藏）
     loadFromURLHash();
+    // 渲染搜尋歷史紀錄
+    renderSearchHistory();
     // 預設顯示「我的收藏」
     currentCategory = "__favorites__";
     filterAndRender();
@@ -516,13 +521,120 @@ function scoreFood(food, q, chars) {
   return 0;
 }
 
+// ===== 搜尋歷史管理（保持 5 個以內）=====
+const MAX_SEARCH_HISTORY = 5;
+
+function getSearchHistory() {
+  try {
+    return JSON.parse(localStorage.getItem("food_search_history") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveSearchHistoryList(list) {
+  localStorage.setItem("food_search_history", JSON.stringify(list));
+}
+
+function addSearchHistory(query) {
+  const q = query.trim();
+  if (!q || q.length < 1) return;
+  // 去除已有的相同字詞（不分大小寫）
+  let history = getSearchHistory().filter(item => item.toLowerCase() !== q.toLowerCase());
+  // 最新置頂
+  history.unshift(q);
+  // 保持最多 5 個
+  if (history.length > MAX_SEARCH_HISTORY) {
+    history = history.slice(0, MAX_SEARCH_HISTORY);
+  }
+  saveSearchHistoryList(history);
+  renderSearchHistory();
+}
+
+function removeSearchHistoryItem(query, e) {
+  if (e) e.stopPropagation();
+  let history = getSearchHistory().filter(item => item !== query);
+  saveSearchHistoryList(history);
+  renderSearchHistory();
+}
+
+function clearAllSearchHistory() {
+  localStorage.removeItem("food_search_history");
+  renderSearchHistory();
+}
+
+function renderSearchHistory() {
+  if (!searchHistory || !searchHistoryTags) return;
+  const history = getSearchHistory();
+  if (history.length === 0) {
+    searchHistory.style.display = "none";
+    return;
+  }
+
+  searchHistory.style.display = "block";
+  searchHistoryTags.innerHTML = "";
+
+  const frag = document.createDocumentFragment();
+  history.forEach(item => {
+    const tag = document.createElement("div");
+    tag.className = "sh-tag";
+    tag.innerHTML = `
+      <span class="sh-tag-text">${item}</span>
+      <button class="sh-tag-del" title="刪除此紀錄">✕</button>
+    `;
+
+    tag.querySelector(".sh-tag-text").addEventListener("click", () => {
+      searchInput.value = item;
+      addSearchHistory(item); // 再次搜尋時自動置頂
+      filterAndRender();
+      searchInput.focus();
+    });
+
+    tag.querySelector(".sh-tag-del").addEventListener("click", (e) => {
+      removeSearchHistoryItem(item, e);
+    });
+
+    frag.appendChild(tag);
+  });
+
+  searchHistoryTags.appendChild(frag);
+}
+
+if (clearAllHistory) {
+  clearAllHistory.addEventListener("click", clearAllSearchHistory);
+}
+
 let searchTimer = null;
+let saveHistoryTimer = null;
+
 searchInput.addEventListener("input", () => {
   clearTimeout(searchTimer);
+  clearTimeout(saveHistoryTimer);
   searchTimer = setTimeout(filterAndRender, 180);
+  
+  const raw = searchInput.value.trim();
+  if (raw.length >= 2) {
+    saveHistoryTimer = setTimeout(() => {
+      addSearchHistory(raw);
+    }, 1200);
+  }
 });
+
+searchInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    clearTimeout(saveHistoryTimer);
+    const raw = searchInput.value.trim();
+    if (raw) {
+      addSearchHistory(raw);
+      filterAndRender();
+      searchInput.blur();
+    }
+  }
+});
+
 clearBtn.addEventListener("click", () => {
   searchInput.value = "";
+  clearTimeout(saveHistoryTimer);
   filterAndRender();
   searchInput.focus();
 });
@@ -780,6 +892,10 @@ function renderFoods(foods) {
 
 // ===== 詳情 Modal =====
 async function openDetail(code) {
+  // 若當前搜尋框有字串，記錄此搜尋詞
+  const rawSearch = searchInput.value.trim();
+  if (rawSearch) addSearchHistory(rawSearch);
+
   modalFoodName.textContent = "載入中…";
   modalFoodEn.textContent   = "";
   modalFoodAlias.textContent= "";

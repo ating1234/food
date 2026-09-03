@@ -71,6 +71,16 @@
           placeholder="搜尋食品名稱、俗名、英文名…" autocomplete="off" />
         <button class="clear-btn" id="clearBtn">✕</button>
       </div>
+      
+      <!-- 最近搜尋紀錄（保持 5 個以內） -->
+      <div class="search-history" id="searchHistory" style="display:none">
+        <div class="sh-header">
+          <span class="sh-title">🕒 最近搜尋</span>
+          <button class="sh-clear-all" id="clearAllHistory" title="清空全部搜尋紀錄">清除全部</button>
+        </div>
+        <div class="sh-tags" id="searchHistoryTags"></div>
+      </div>
+
       <div class="search-hint" id="searchHint">載入中，請稍候…</div>
     </section>
 
