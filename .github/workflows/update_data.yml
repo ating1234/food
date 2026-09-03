@@ -15,8 +15,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 檢出程式碼
-        uses: actions/checkout@v4.2.2
+      - name: 📥 檢出程式碼 (原生高速 Git Checkout)
+        run: |
+          git clone --depth 1 "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" .
 
       - name: 🔄 執行資料庫更新與版本同步
         run: |
