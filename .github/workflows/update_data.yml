@@ -13,24 +13,16 @@ permissions:
 jobs:
   check-and-update:
     runs-on: ubuntu-latest
-    env:
-      ACTIONS_RUNNER_FORCED_NODE_VERSION: node24
 
     steps:
-      - name: 📥 檢出程式碼 (Checkout repository)
-        uses: actions/checkout@v4
+      - name: 📥 檢出程式碼
+        uses: actions/checkout@v4.2.2
 
-      - name: 🐍 設定 Python 環境
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: 🔄 執行資料庫更新與版本同步程式
-        id: updater
+      - name: 🔄 執行資料庫更新與版本同步
         run: |
           python3 update_dataset.py
 
-      - name: 🚀 提交並推送更新 (Commit & Push if updated)
+      - name: 🚀 提交並推送更新 (有變動才提交)
         run: |
           # 檢查是否有檔案變動
           if [ -n "$(git status --porcelain)" ]; then
