@@ -3,19 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>食品營養成分 - 台灣食品營養成分資料庫</title>
-  <meta name="description" content="🥗 快速查詢 2,180 種台灣在地食品、104 項完整營養分析，支援自訂攝取量精確換算與食品對比，資料來源：衛生福利部食品藥物管理署（TFDA）第 20.5 版。" />
+  <title>食品營養成分 - 台灣食品營養成分資料庫 (TFDA 20.5)</title>
+  <meta name="description" content="🥗 快速查詢 2,180 種台灣在地食品、104 項完整營養分析（熱量、鉀、磷、蛋白質、維生素等），支援每 100g 臨床色彩分級、自訂攝取量換算與食品對比。資料來源：衛生福利部食品藥物管理署（TFDA）第 20.5 版。" />
+  <meta name="keywords" content="台灣食品營養成分, 熱量查詢, 鉀含量, 磷含量, 蛋白質, 膳食纖維, 低鉀食品, 低磷食品, 腎臟病飲食, 糖尿病飲食, 減肥飲食, 衛福部食藥署, TFDA, 食品營養資料庫" />
+  <meta name="author" content="衛生福利部食品藥物管理署 (TFDA) / 台灣食品營養成分資料庫" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <link rel="canonical" href="https://ating1234.github.io/food/" />
   
   <!-- Open Graph / Facebook / LINE -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="食品營養成分" />
-  <meta property="og:title" content="🥗 食品營養成分 - 台灣食品營養成分資料庫" />
-  <meta property="og:description" content="收錄 2,180 種台灣在地食品、104 項營養分析、自訂攝取量換算與食品比較。資料來源：衛福部食藥署 第 20.5 版。" />
+  <meta property="og:title" content="🥗 食品營養成分 - 台灣食品營養成分資料庫 (TFDA 20.5)" />
+  <meta property="og:description" content="收錄 2,180 種台灣在地食品、104 項完整營養分析、每 100g 鉀/磷臨床分級指標、自訂攝取量換算與食品對比。" />
+  <meta property="og:url" content="https://ating1234.github.io/food/" />
+  <meta property="og:image" content="https://ating1234.github.io/food/icon-512.png" />
+  <meta property="og:image:width" content="512" />
+  <meta property="og:image:height" content="512" />
+  <meta property="og:locale" content="zh_TW" />
   
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="🥗 食品營養成分 - 台灣食品營養成分資料庫" />
-  <meta name="twitter:description" content="收錄 2,180 種台灣在地食品、104 項營養分析、自訂攝取量換算與食品比較。" />
+  <meta name="twitter:description" content="收錄 2,180 種台灣在地食品、104 項完整營養分析、自訂攝取量換算與食品比較。資料來源：衛福部食藥署 第 20.5 版。" />
+  <meta name="twitter:image" content="https://ating1234.github.io/food/icon-512.png" />
   
   <!-- PWA & Mobile Web App Meta -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -28,9 +38,62 @@
   <link rel="icon" href="apple-touch-icon.png" type="image/png" />
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
   
+  <!-- Schema.org 結構化資料 (JSON-LD) for Google & AI Engines -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://ating1234.github.io/food/#website",
+        "url": "https://ating1234.github.io/food/",
+        "name": "食品營養成分 - 台灣食品營養成分資料庫",
+        "description": "收錄 2,180 種台灣食品、104 項營養分析、自訂克數換算與食品對比工具",
+        "inLanguage": "zh-TW"
+      },
+      {
+        "@type": "WebApplication",
+        "@id": "https://ating1234.github.io/food/#webapp",
+        "name": "台灣食品營養成分查詢與計算工具",
+        "url": "https://ating1234.github.io/food/",
+        "applicationCategory": "HealthApplication",
+        "operatingSystem": "All",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "TWD"
+        }
+      },
+      {
+        "@type": "Dataset",
+        "@id": "https://ating1234.github.io/food/#dataset",
+        "name": "衛生福利部食品藥物管理署食品營養成分資料庫 第 20.5 版",
+        "description": "台灣在地 2,180 種食品之 104 項營養成分分析數據，包含一般成分、礦物質、維生素與脂肪酸。",
+        "url": "https://ating1234.github.io/food/",
+        "license": "https://data.gov.tw/license",
+        "creator": {
+          "@type": "Organization",
+          "name": "衛生福利部食品藥物管理署 (TFDA)"
+        },
+        "spatialCoverage": "Taiwan",
+        "temporalCoverage": "2026",
+        "inLanguage": "zh-TW"
+      }
+    ]
+  }
+  </script>
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
+<!-- NOSCRIPT fallback 供搜尋引擎與 AI 爬蟲完整索引 -->
+<noscript>
+  <div style="padding:20px;background:#f0fdf4;border-bottom:2px solid #1a7f5a;font-family:sans-serif;">
+    <h1>🥗 台灣食品營養成分資料庫 (TFDA 第 20.5 版)</h1>
+    <p>本站完整收錄台灣 2,180 種食品、18 大分類（穀物類、澱粉類、堅果及種子類、豆類、蔬菜類、菇類、藻類、水果類、肉類、蛋類、魚貝類、乳品類、油脂類、糖類、飲料類、糕餅點心類、加工調理食品類、調味料類），提供熱量 (kcal)、鉀 (K)、磷 (P)、蛋白質、膳食纖維等 104 項營養成分分析與自訂克數換算。</p>
+  </div>
+</noscript>
 
 <!-- HEADER -->
 <header class="site-header">

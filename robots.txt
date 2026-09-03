@@ -1,0 +1,25 @@
+# robots.txt for Taiwan Food Nutrition Database (https://ating1234.github.io/food/)
+User-agent: *
+Allow: /
+
+# Allow AI Search Engine Crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+Sitemap: https://ating1234.github.io/food/sitemap.xml
+# LLM Context: https://ating1234.github.io/food/llms.txt
