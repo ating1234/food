@@ -135,6 +135,8 @@ const emptyStateSub  = $("emptyStateSub");
 const searchHistory  = $("searchHistory");
 const searchHistoryTags = $("searchHistoryTags");
 const clearAllHistory = $("clearAllHistory");
+const btnSortPotassium = $("btnSortPotassium");
+const btnSortPhosphorus= $("btnSortPhosphorus");
 
 // ===== 各分類圖示與生活代表熱門關鍵字 =====
 const CATEGORY_ICONS = {
@@ -470,6 +472,7 @@ function buildCategoryList() {
 
 function selectCategory(cat) {
   currentCategory = cat;
+  clearQuickSortActive();
   setActiveCat(cat);
   filterAndRender();
 }
@@ -685,10 +688,56 @@ searchInput.addEventListener("keydown", (e) => {
 clearBtn.addEventListener("click", () => {
   searchInput.value = "";
   clearTimeout(saveHistoryTimer);
+  clearQuickSortActive();
   filterAndRender();
   showSearchHistoryDropdown();
   searchInput.focus();
 });
+
+// ===== 快捷全品項礦物質排行（含鉀食物 / 含磷食物高至低排序）=====
+function sortByMineral(mineralType) {
+  if (!allFoods || allFoods.length === 0) return;
+
+  // 清空搜尋輸入與歷史浮窗
+  searchInput.value = "";
+  hideSearchHistoryDropdown();
+  clearTimeout(saveHistoryTimer);
+
+  // 切換為全品項狀態（重設側欄 active 狀態）
+  currentCategory = null;
+  setActiveCat(null);
+
+  // 更新快捷標籤 active 樣式
+  if (btnSortPotassium) btnSortPotassium.classList.toggle("active", mineralType === "k");
+  if (btnSortPhosphorus) btnSortPhosphorus.classList.toggle("active", mineralType === "p");
+
+  const fieldName = mineralType === "k" ? "鉀 (K)" : "磷 (P)";
+  
+  // 依該礦物質由高到低排序 (null/無數值置底)
+  const sorted = [...allFoods].sort((a, b) => {
+    const valA = (a[mineralType] !== null && a[mineralType] !== undefined) ? a[mineralType] : -1;
+    const valB = (b[mineralType] !== null && b[mineralType] !== undefined) ? b[mineralType] : -1;
+    return valB - valA;
+  });
+
+  renderFoods(sorted);
+  searchHint.textContent = `共 ${sorted.length.toLocaleString()} 種食品（全品項依「${fieldName}」含量由高至低排序）`;
+
+  // 切換回搜尋結果 tab
+  switchTab("search");
+}
+
+function clearQuickSortActive() {
+  if (btnSortPotassium) btnSortPotassium.classList.remove("active");
+  if (btnSortPhosphorus) btnSortPhosphorus.classList.remove("active");
+}
+
+if (btnSortPotassium) {
+  btnSortPotassium.addEventListener("click", () => sortByMineral("k"));
+}
+if (btnSortPhosphorus) {
+  btnSortPhosphorus.addEventListener("click", () => sortByMineral("p"));
+}
 
 function filterAndRender() {
   const raw = searchInput.value.trim();
