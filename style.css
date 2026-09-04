@@ -1302,3 +1302,179 @@ select,
   border: 1px solid rgba(26, 127, 90, .2);
 }
 
+/* 頁尾 Bug 回報按鈕 */
+.footer-bug-report {
+  margin-top: 10px;
+  font-size: .84rem;
+  color: var(--gray-500);
+  font-weight: 500;
+}
+.footer-bug-btn {
+  background: none;
+  border: none;
+  color: var(--blue);
+  font-size: .84rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: all var(--transition);
+}
+.footer-bug-btn:hover {
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.08);
+}
+
+/* ===== BUG 回報 MODAL ===== */
+.bug-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn .18s ease;
+}
+.bug-modal-card {
+  background: #ffffff;
+  border: 1px solid var(--gray-200);
+  border-radius: 18px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(0,0,0,.18), 0 1px 3px rgba(0,0,0,.08);
+  overflow: hidden;
+  animation: popDown .2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bug-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--gray-100);
+}
+.bug-modal-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--gray-900);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bug-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: var(--gray-400);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+.bug-modal-close:hover {
+  background: var(--gray-100);
+  color: var(--gray-800);
+}
+.bug-report-form {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.bug-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+.bug-form-label {
+  font-size: .84rem;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+.bug-required {
+  color: var(--red);
+}
+.bug-optional {
+  font-size: .75rem;
+  color: var(--gray-400);
+  font-weight: 400;
+}
+.bug-form-input, .bug-form-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 10px;
+  font-size: .9rem;
+  font-family: inherit;
+  color: var(--gray-900);
+  background: var(--gray-50);
+  transition: all var(--transition);
+  outline: none;
+}
+.bug-form-input:focus, .bug-form-textarea:focus {
+  border-color: var(--blue);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+.bug-form-textarea {
+  resize: vertical;
+  min-height: 90px;
+  line-height: 1.5;
+}
+.bug-alert {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: .84rem;
+  line-height: 1.4;
+}
+.bug-alert.alert-success {
+  background: var(--green-pale);
+  color: var(--green-dark);
+  border: 1px solid rgba(26, 127, 90, .2);
+}
+.bug-alert.alert-error {
+  background: var(--red-light);
+  color: var(--red);
+  border: 1px solid rgba(239, 68, 68, .25);
+}
+.btn-submit-bug {
+  background: var(--blue);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 20px;
+  font-size: .92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+  margin-top: 4px;
+}
+.btn-submit-bug:hover:not(:disabled) {
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, .25);
+  transform: translateY(-1px);
+}
+.btn-submit-bug:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .footer-bug-report { font-size: .78rem; margin-top: 8px; }
+  .footer-bug-btn { font-size: .78rem; }
+  .bug-modal-card { border-radius: 16px; max-width: 100%; }
+  .bug-modal-header { padding: 14px 18px; }
+  .bug-report-form { padding: 16px 18px 20px; gap: 12px; }
+  .bug-form-input, .bug-form-textarea { font-size: 16px !important; }
+}
+

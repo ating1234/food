@@ -1636,5 +1636,131 @@ function hideLoading() {
   if (loadingEl) { loadingEl.remove(); loadingEl = null; }
 }
 
+// ===== Bug 回報功能 (比照 dividend.ating123.com) =====
+const openBugModalBtn  = $("openBugModalBtn");
+const closeBugModalBtn = $("closeBugModalBtn");
+const bugReportModal   = $("bugReportModal");
+const bugReportForm    = $("bugReportForm");
+const bugAlert         = $("bugAlert");
+const submitBugBtn     = $("submitBugBtn");
+
+function showBugModal() {
+  if (!bugReportModal) return;
+  bugReportModal.style.display = "flex";
+  if (bugAlert) {
+    bugAlert.style.display = "none";
+    bugAlert.textContent = "";
+  }
+  if (bugReportForm) bugReportForm.reset();
+  const bugTitle = $("bugTitle");
+  if (bugTitle) setTimeout(() => bugTitle.focus(), 80);
+}
+
+function hideBugModal() {
+  if (!bugReportModal) return;
+  bugReportModal.style.display = "none";
+}
+
+if (openBugModalBtn) {
+  openBugModalBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    showBugModal();
+  });
+}
+
+if (closeBugModalBtn) {
+  closeBugModalBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    hideBugModal();
+  });
+}
+
+// 點擊背景遮罩關閉
+if (bugReportModal) {
+  bugReportModal.addEventListener("click", (e) => {
+    if (e.target === bugReportModal) {
+      hideBugModal();
+    }
+  });
+}
+
+// ESC 鍵關閉
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && bugReportModal && bugReportModal.style.display === "flex") {
+    hideBugModal();
+  }
+});
+
+// 送出 Bug 回報
+if (bugReportForm) {
+  bugReportForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const titleEl = $("bugTitle");
+    const descEl  = $("bugDescription");
+    const emailEl = $("bugEmail");
+
+    const title = titleEl ? titleEl.value.trim() : "";
+    const description = descEl ? descEl.value.trim() : "";
+    const email = emailEl ? emailEl.value.trim() : "";
+
+    if (!title || !description) {
+      if (bugAlert) {
+        bugAlert.className = "bug-alert alert-error";
+        bugAlert.textContent = "⚠️ 請填寫主旨與詳細描述！";
+        bugAlert.style.display = "block";
+      }
+      return;
+    }
+
+    if (submitBugBtn) {
+      submitBugBtn.disabled = true;
+      submitBugBtn.textContent = "傳送中...";
+    }
+    if (bugAlert) bugAlert.style.display = "none";
+
+    try {
+      // 呼叫 Cloudflare Pages Functions 後端安全代理接口 (/api/report-bug)
+      const response = await fetch("/api/report-bug", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          app_name: "台灣食品營養成分資料庫 (food.ating123.com)",
+          title: title,
+          description: description,
+          email: email
+        })
+      });
+
+      const result = await response.json().catch(() => ({}));
+      if (response.ok && (result.success || result.message === "Report saved successfully")) {
+        if (bugAlert) {
+          bugAlert.className = "bug-alert alert-success";
+          bugAlert.textContent = "🎉 回報成功！感謝您的協助與反饋。";
+          bugAlert.style.display = "block";
+        }
+        setTimeout(() => {
+          hideBugModal();
+        }, 1800);
+      } else {
+        throw new Error(result.message || result.msg || `回報失敗 (${response.status})`);
+      }
+    } catch (err) {
+      if (bugAlert) {
+        bugAlert.className = "bug-alert alert-error";
+        bugAlert.textContent = `❌ ${err.message}`;
+        bugAlert.style.display = "block";
+      }
+    } finally {
+      if (submitBugBtn) {
+        submitBugBtn.disabled = false;
+        submitBugBtn.textContent = "送出回報";
+      }
+    }
+  });
+}
+
 // ===== 啟動 =====
 init();

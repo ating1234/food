@@ -234,6 +234,9 @@
         <span class="source-badge">官方資料</span>
         <span id="footerSourceText">資料來源：衛生福利部食品藥物管理署（TFDA）食品營養成分資料庫 第 20.5 版</span>
       </div>
+      <div class="footer-bug-report">
+        系統破防了？👉 <button id="openBugModalBtn" class="footer-bug-btn" type="button">回報 Bug</button>
+      </div>
     </footer>
   </main>
 </div>
@@ -285,6 +288,32 @@
   <div class="cbar-actions">
     <button class="cbar-btn primary" id="compareBarOpen">開始比較 →</button>
     <button class="cbar-btn ghost"   id="compareBarClear">清除</button>
+  </div>
+<!-- Bug 回報 Modal 燈箱 -->
+<div id="bugReportModal" class="bug-modal-overlay" style="display:none">
+  <div class="bug-modal-card">
+    <div class="bug-modal-header">
+      <h3 class="bug-modal-title">🐞 回報系統 Bug</h3>
+      <button id="closeBugModalBtn" class="bug-modal-close" type="button" title="關閉">✕</button>
+    </div>
+    <form id="bugReportForm" class="bug-report-form">
+      <div class="bug-form-group">
+        <label class="bug-form-label" for="bugTitle">主旨 <span class="bug-required">*</span></label>
+        <input type="text" id="bugTitle" required placeholder="例如：某些食品無法顯示營養數據..." class="bug-form-input" />
+      </div>
+      <div class="bug-form-group">
+        <label class="bug-form-label" for="bugDescription">詳細描述 <span class="bug-required">*</span></label>
+        <textarea id="bugDescription" required rows="4" placeholder="請詳細描述您遇到的問題與重現步驟..." class="bug-form-textarea"></textarea>
+      </div>
+      <div class="bug-form-group">
+        <label class="bug-form-label" for="bugEmail">聯絡信箱 <span class="bug-optional">(選填)</span></label>
+        <input type="email" id="bugEmail" placeholder="您的 Email，方便我們與您聯絡" class="bug-form-input" />
+      </div>
+      <div id="bugAlert" class="bug-alert" style="display:none"></div>
+      <button type="submit" id="submitBugBtn" class="btn-submit-bug">
+        送出回報
+      </button>
+    </form>
   </div>
 </div>
 
