@@ -812,48 +812,88 @@ function filterAndRender() {
   renderFoods(results);
 }
 
-// ===== 隨機精選各分類生活推薦範例 =====
+// ===== 建立單張食品標準卡片 (含愛心收藏、比較按鈕、每100g 鉀/磷臨床分級膠囊) =====
+function createFoodCardElement(food) {
+  const inCompare  = compareList.some(f => f.code === food.code);
+  const isFav      = favorites.has(food.code);
+
+  const card = document.createElement("div");
+  card.className = "food-card" + (inCompare ? " in-compare" : "");
+  card.dataset.code = food.code;
+  card.dataset.catShort = food.category.replace("類","").replace("及其他","");
+
+  const kVal = (food.k !== null && food.k !== undefined) ? food.k : "—";
+  const pVal = (food.p !== null && food.p !== undefined) ? food.p : "—";
+  const kColor = getCustomColor("鉀", food.k);
+  const pColor = getCustomColor("磷", food.p);
+  const kClass = kColor === "danger" ? "min-danger" : kColor === "warn" ? "min-warn" : kColor === "ok" ? "min-ok" : "";
+  const pClass = pColor === "danger" ? "min-danger" : pColor === "warn" ? "min-warn" : pColor === "ok" ? "min-ok" : "";
+
+  card.innerHTML = `
+    <button class="card-fav-btn${isFav?" fav-on":""}" data-code="${food.code}" title="收藏">${isFav?"❤️":"🤍"}</button>
+    <div class="card-name">${food.name}</div>
+    <div class="card-en">${food.en_name || "&nbsp;"}</div>
+    <div class="card-alias">${food.alias ? "別名："+food.alias : "&nbsp;"}</div>
+    <div class="card-minerals">
+      <div class="card-mineral-item card-min-k ${kClass}">
+        <span class="cmin-label">鉀</span>
+        <span class="cmin-val">${kVal}</span>
+        <span class="cmin-unit">mg</span>
+      </div>
+      <div class="card-mineral-item card-min-p ${pClass}">
+        <span class="cmin-label">磷</span>
+        <span class="cmin-val">${pVal}</span>
+        <span class="cmin-unit">mg</span>
+      </div>
+    </div>
+    <button class="card-compare-btn${inCompare?" active":""}" data-code="${food.code}" title="${inCompare?"移出比較":"加入比較"}">
+      ${inCompare ? "📊 比較中" : "＋ 比較"}
+    </button>
+  `;
+
+  // 點卡片主體開啟詳情（排除按鈕）
+  card.addEventListener("click", e => {
+    if (e.target.closest(".card-fav-btn") || e.target.closest(".card-compare-btn")) return;
+    openDetail(food.code);
+  });
+
+  // 愛心按鈕
+  card.querySelector(".card-fav-btn").addEventListener("click", e => {
+    e.stopPropagation();
+    toggleFavorite(food.code, e.currentTarget);
+  });
+
+  // 比較按鈕
+  card.querySelector(".card-compare-btn").addEventListener("click", e => {
+    e.stopPropagation();
+    toggleCompareFromCard(food.code, e.currentTarget, card);
+  });
+
+  return card;
+}
+
+// ===== 隨機精選 9 大分類推薦範例 (18 類隨機抽 9 類，數量減半) =====
 function getExploreFoods() {
   if (!allFoods || allFoods.length === 0) return [];
   
   const categories = Object.keys(CATEGORY_ICONS);
+  // 隨機打亂 18 個分類，只抽取前 9 個分類（內容減少一半）
+  const shuffledCats = [...categories].sort(() => 0.5 - Math.random()).slice(0, 9);
   const selectedFoods = [];
-  const selectedCodes = new Set();
 
-  categories.forEach(cat => {
+  shuffledCats.forEach(cat => {
     const catFoods = allFoods.filter(f => f.category === cat);
     if (catFoods.length === 0) return;
 
-    // 優先挑選常用熱門關鍵字符合者
+    // 優先挑選常用熱門生活關鍵字符合者，若無則純隨機挑選 1 個
     const kws = POPULAR_KEYWORDS[cat] || [];
     const matched = catFoods.filter(f => kws.some(kw => f.name.includes(kw)));
-    
-    // 隨機選一個
-    let pick = null;
-    if (matched.length > 0) {
-      pick = matched[Math.floor(Math.random() * matched.length)];
-    } else {
-      pick = catFoods[Math.floor(Math.random() * catFoods.length)];
-    }
+    const pick = matched.length > 0 
+      ? matched[Math.floor(Math.random() * matched.length)]
+      : catFoods[Math.floor(Math.random() * catFoods.length)];
 
-    if (pick && !selectedCodes.has(pick.code)) {
+    if (pick) {
       selectedFoods.push(pick);
-      selectedCodes.add(pick.code);
-    }
-
-    // 對於特別常見熱門分類（肉類、乳品類、蔬菜類、水果類、魚貝類），多隨機挑一個不同的項目增加多元美感
-    if (["肉類", "蔬菜類", "水果類", "魚貝類", "乳品類"].includes(cat)) {
-      const remaining = catFoods.filter(f => !selectedCodes.has(f.code));
-      if (remaining.length > 0) {
-        const extraMatched = remaining.filter(f => kws.some(kw => f.name.includes(kw)));
-        const extraPick = extraMatched.length > 0 
-          ? extraMatched[Math.floor(Math.random() * extraMatched.length)]
-          : remaining[Math.floor(Math.random() * remaining.length)];
-        if (extraPick && !selectedCodes.has(extraPick.code)) {
-          selectedFoods.push(extraPick);
-          selectedCodes.add(extraPick.code);
-        }
-      }
     }
   });
 
@@ -867,28 +907,7 @@ function renderExploreSection() {
   
   const frag = document.createDocumentFragment();
   exploreList.forEach(food => {
-    const icon = CATEGORY_ICONS[food.category] || "🥗";
-    const catShort = food.category.replace("類","").replace("及其他","");
-
-    const card = document.createElement("div");
-    card.className = "explore-card";
-    card.dataset.code = food.code;
-    card.innerHTML = `
-      <div class="exp-card-left">
-        <span class="exp-icon">${icon}</span>
-        <div class="exp-info">
-          <span class="exp-name" title="${food.name}">${food.name}</span>
-          <span class="exp-cat">${catShort}</span>
-        </div>
-      </div>
-      <span class="exp-action" title="點擊查看成分">查成分 ➔</span>
-    `;
-
-    card.addEventListener("click", () => {
-      openDetail(food.code);
-    });
-
-    frag.appendChild(card);
+    frag.appendChild(createFoodCardElement(food));
   });
 
   exploreGrid.appendChild(frag);
@@ -942,62 +961,7 @@ function renderFoods(foods, page = 1) {
   const frag  = document.createDocumentFragment();
 
   slice.forEach(food => {
-    const inCompare  = compareList.some(f => f.code === food.code);
-    const isFav      = favorites.has(food.code);
-
-    const card = document.createElement("div");
-    card.className = "food-card" + (inCompare ? " in-compare" : "");
-    card.dataset.code = food.code;
-    card.dataset.catShort = food.category.replace("類","").replace("及其他","");
-
-    const kVal = (food.k !== null && food.k !== undefined) ? food.k : "—";
-    const pVal = (food.p !== null && food.p !== undefined) ? food.p : "—";
-    const kColor = getCustomColor("鉀", food.k);
-    const pColor = getCustomColor("磷", food.p);
-    const kClass = kColor === "danger" ? "min-danger" : kColor === "warn" ? "min-warn" : kColor === "ok" ? "min-ok" : "";
-    const pClass = pColor === "danger" ? "min-danger" : pColor === "warn" ? "min-warn" : pColor === "ok" ? "min-ok" : "";
-
-    card.innerHTML = `
-      <button class="card-fav-btn${isFav?" fav-on":""}" data-code="${food.code}" title="收藏">${isFav?"❤️":"🤍"}</button>
-      <div class="card-name">${food.name}</div>
-      <div class="card-en">${food.en_name || "&nbsp;"}</div>
-      <div class="card-alias">${food.alias ? "別名："+food.alias : "&nbsp;"}</div>
-      <div class="card-minerals">
-        <div class="card-mineral-item card-min-k ${kClass}">
-          <span class="cmin-label">鉀</span>
-          <span class="cmin-val">${kVal}</span>
-          <span class="cmin-unit">mg</span>
-        </div>
-        <div class="card-mineral-item card-min-p ${pClass}">
-          <span class="cmin-label">磷</span>
-          <span class="cmin-val">${pVal}</span>
-          <span class="cmin-unit">mg</span>
-        </div>
-      </div>
-      <button class="card-compare-btn${inCompare?" active":""}" data-code="${food.code}" title="${inCompare?"移出比較":"加入比較"}">
-        ${inCompare ? "📊 比較中" : "＋ 比較"}
-      </button>
-    `;
-
-    // 點卡片主體開啟詳情（排除按鈕）
-    card.addEventListener("click", e => {
-      if (e.target.closest(".card-fav-btn") || e.target.closest(".card-compare-btn")) return;
-      openDetail(food.code);
-    });
-
-    // 愛心按鈕
-    card.querySelector(".card-fav-btn").addEventListener("click", e => {
-      e.stopPropagation();
-      toggleFavorite(food.code, e.currentTarget);
-    });
-
-    // 比較按鈕
-    card.querySelector(".card-compare-btn").addEventListener("click", e => {
-      e.stopPropagation();
-      toggleCompareFromCard(food.code, e.currentTarget, card);
-    });
-
-    frag.appendChild(card);
+    frag.appendChild(createFoodCardElement(food));
   });
 
   foodGrid.appendChild(frag);

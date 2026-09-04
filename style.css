@@ -637,8 +637,8 @@ select,
 }
 .explore-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
 }
 .explore-card {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
