@@ -1,6 +1,6 @@
 /**
- * _worker.js
- * Cloudflare Pages Advanced Mode (Worker)
+ * worker.js
+ * Cloudflare Worker (with Static Assets)
  * 1. 攔截 /api/report-bug 安全轉發至集中式 Bug 回報中心 (bug-center)
  * 2. 其他所有靜態資源 (HTML / CSS / JS / JSON) 直通 env.ASSETS 高速快取
  */
@@ -18,7 +18,7 @@ export default {
         if (!apiKey) {
           return new Response(JSON.stringify({
             success: false,
-            message: "後端尚未在 Cloudflare Pages 配置 BUG_CENTER_API_KEY 環境變數"
+            message: "後端尚未在 Cloudflare Worker 配置 BUG_CENTER_API_KEY 環境變數"
           }), {
             status: 500,
             headers: { "Content-Type": "application/json" }
@@ -88,7 +88,7 @@ export default {
       });
     }
 
-    // 其他所有靜態資源交付 Cloudflare Pages 原生靜態快取
+    // 其他所有靜態資源交付 Cloudflare Assets 原生靜態快取
     return env.ASSETS.fetch(request);
   }
 };
